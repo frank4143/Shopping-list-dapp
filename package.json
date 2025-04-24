@@ -1,0 +1,25 @@
+{
+    "name": "shopping_list_dapp",
+    "type": "module",
+    "version": "1.0.0",
+    "description": "Decentralized application for Shopping List",
+    "main": "index.js",
+    "scripts": {
+        "create-account": "node scripts/1-create-account.js",
+        "first-transaction": "node scripts/2-first-transaction.js",
+        "contract":"python contracts/shoppinglist.py",
+        "deploy": "node scripts/3-deploy-shoppinglist.js",
+        "test": "node scripts/4-test-shoppinglist.js",
+        "start": "node src/server.js"
+    },
+    "author": "Freddy Varghese",
+    "license": "MIT",
+    "dependencies": {
+      "algosdk": "^1.13.1",
+      "dotenv": "^16.0.0",
+      "pip": "^0.0.1",
+      "python3": "^0.0.1",
+      "xhr2": "^0.2.1"
+    }
+  }
+  
