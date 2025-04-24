@@ -11,6 +11,25 @@ const PORT   = process.env.PORT || 3000;
 // parse JSON bodies
 app.use(express.json());
 
+// ── Welcome endpoint ─────────────────────────────────────────────────────────
+app.get("/", (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>ShoppingList DApp</title>
+    </head>
+    <body>
+      <h1>ShoppingList DApp is running!</h1>
+      <p>Use <a href="/state">/state</a> to view the list,</p>
+      <p><code>POST /add</code> to add items, and <code>POST /remove</code> to remove items.</p>
+    </body>
+    </html>
+  `);
+});
+
 // ── Algorand client setup ────────────────────────────────────────────────────
 const BASE_SERVER = process.env.BASE_SERVER || "https://testnet-api.algonode.cloud";
 const algodClient = new algosdk.Algodv2("", BASE_SERVER, "");
