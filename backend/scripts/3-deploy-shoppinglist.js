@@ -1,87 +1,98 @@
-// scripts/3-deploy-shoppinglist.js
+// deploy_shoppinglist.js
 
 import dotenv from "dotenv";
 import algosdk from "algosdk";
-import { open } from "node:fs/promises";
+import { open, writeFile } from "node:fs/promises";
+import path from "path";
 
 dotenv.config();
 
 // === Configure Algod client ===
-// You can override BASE_SERVER in your .env, otherwise defaults to AlgoNode TestNet
 const BASE_SERVER = process.env.BASE_SERVER || "https://testnet-api.algonode.cloud";
-const ALGOD_TOKEN  = "";  // no token needed for AlgoNode
-const ALGOD_PORT   = "";
+const ALGOD_TOKEN = process.env.ALGOD_TOKEN || "";
+const ALGOD_PORT  = process.env.ALGOD_PORT  || "";
 
-// Recover your account from the MNEMONIC in .env
+// Recover your account from MNEMONIC in .env
 const mnemonic = process.env.MNEMONIC;
 if (!mnemonic) {
   console.error("Error: MNEMONIC not set in .env");
   process.exit(1);
 }
 const myaccount = algosdk.mnemonicToSecretKey(mnemonic);
-const sender = myaccount.addr;
+const sender    = myaccount.addr;
 
-// Instantiate Algod client
+// Instantiate client
 const algodClient = new algosdk.Algodv2(ALGOD_TOKEN, BASE_SERVER, ALGOD_PORT);
 
-// Helper to compile TEAL source to bytes
+// Helper to compile TEAL
 async function compileProgram(client, tealSource) {
   const encoder = new TextEncoder();
-  const programBytes = encoder.encode(tealSource);
-  const compileResponse = await client.compile(programBytes).do();
-  return new Uint8Array(Buffer.from(compileResponse.result, "base64"));
+  const bytes   = encoder.encode(tealSource);
+  const resp    = await client.compile(bytes).do();
+  return new Uint8Array(Buffer.from(resp.result, "base64"));
 }
 
 (async () => {
   try {
-    // === Parameters for your Shopping List app ===
-    const localInts   = 0;   // no local state
+    // ── App parameters ───────────────────────────────────────────────────────
+    const localInts   = 0;
     const localBytes  = 0;
-    const globalInts  = 1;   // "Count" of items
-    const globalBytes = 10;  // up to 10 items (each stored as a byte-string)
+    const maxItems    = 10;
+    const globalInts  = 1;         // Count
+    const globalBytes = 4 * maxItems; // Name_i, Qty_i, Category_i, Note_i per item
 
-    // Read the compiled TEAL programs from artifacts
-    const approvalFile = await open("./contracts/artifacts/shoppinglist_approval.teal");
-    const clearFile    = await open("./contracts/artifacts/shoppinglist_clear.teal");
-    const approvalSrc  = await approvalFile.readFile({ encoding: "utf8" });
-    const clearSrc     = await clearFile.readFile({ encoding: "utf8" });
+    // ── Read TEAL sources ────────────────────────────────────────────────────
+    const artDir      = path.resolve("contracts/artifacts");
+    const approvalSrc = await open(path.join(artDir, "shoppinglist_approval.teal")).then(f => f.readFile("utf8"));
+    const clearSrc    = await open(path.join(artDir, "shoppinglist_clear.teal")).then(f => f.readFile("utf8"));
 
-    // Compile TEAL to bytecode
+    // ── Compile TEAL to bytecode ─────────────────────────────────────────────
     const approvalProgram = await compileProgram(algodClient, approvalSrc);
     const clearProgram    = await compileProgram(algodClient, clearSrc);
 
-    // Get suggested params from network
+    // ── Get suggested params & createTxn ────────────────────────────────────
     const params = await algodClient.getTransactionParams().do();
-
-    // Create application transaction
-    const onComplete = algosdk.OnApplicationComplete.NoOpOC; 
     const txn = algosdk.makeApplicationCreateTxn(
-      sender,
-      params,
-      onComplete,
-      approvalProgram,
-      clearProgram,
-      localInts,
-      localBytes,
-      globalInts,
-      globalBytes
+      sender, params,
+      algosdk.OnApplicationComplete.NoOpOC,
+      approvalProgram, clearProgram,
+      localInts, localBytes,
+      globalInts, globalBytes
     );
 
-    // Sign and send
-    const signedTxn = txn.signTxn(myaccount.sk);
-    console.log("Signed deployment tx with ID:", txn.txID().toString());
-    await algodClient.sendRawTransaction(signedTxn).do();
+    // ── Sign, send & confirm ─────────────────────────────────────────────────
+    const signedTx = txn.signTxn(myaccount.sk);
+    console.log("Signed deployment tx ID:", txn.txID());
+    await algodClient.sendRawTransaction(signedTx).do();
+    const confirmedTxn = await algosdk.waitForConfirmation(algodClient, txn.txID(), 4);
 
-    // Wait for confirmation
-    const confirmed = await algosdk.waitForConfirmation(algodClient, txn.txID().toString(), 4);
-
-    // Extract and print the new app ID
-    const transactionResponse = await algodClient.pendingTransactionInformation(txn.txID().toString()).do();
-    const appId = transactionResponse["application-index"];
+    // ── Print new App ID ────────────────────────────────────────────────────
+    const appId = confirmedTxn["application-index"];
     console.log("🚀 Deployed ShoppingList app with App ID:", appId);
 
+    // ── Write the App ID back into .env ─────────────────────────────────────
+    const envPath = path.resolve(process.cwd(), ".env");
+    const rawEnv  = await open(envPath).then(f => f.readFile("utf8"));
+    const lines   = rawEnv.split(/\r?\n/);
+
+    const key      = "SHOPPINGLIST_APP_ID";
+    let updated    = false;
+    const newLines = lines.map(line => {
+      if (line.startsWith(`${key}=`)) {
+        updated = true;
+        return `${key}=${appId}`;
+      }
+      return line;
+    });
+
+    if (!updated) {
+      newLines.push(`${key}=${appId}`);
+    }
+
+    await writeFile(envPath, newLines.join("\n"), "utf8");
+    console.log(`✅ Updated .env with ${key}=${appId}`);
   } catch (err) {
-    console.error("Failed to deploy ShoppingList app:", err);
+    console.error("Deployment failed:", err);
     process.exit(1);
   }
 })();
