@@ -16,6 +16,7 @@
     "license": "MIT",
     "dependencies": {
         "algosdk": "^1.13.1",
+        "cors": "^2.8.5",
         "dotenv": "^16.0.0",
         "express": "^5.1.0",
         "pip": "^0.0.1",

@@ -3,11 +3,15 @@
 import dotenv from "dotenv";
 import express from "express";
 import algosdk from "algosdk";
+import cors from "cors";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || "*"   // or restrict to your frontend URL
+}));
 
 const PORT = process.env.PORT || 3000;
 
@@ -132,6 +136,7 @@ app.post("/add", async (req, res) => {
 
   try {
     const txId = await callApp(args);
+    console.log(`Add-item transaction ID:`, txId);
     const state = await readGlobalState();
     res.json({ txId, state });
   } catch (err) {
@@ -159,6 +164,7 @@ app.post("/update", async (req, res) => {
 
   try {
     const txId = await callApp(args);
+    console.log(`Update-item transaction ID:`, txId);
     const state = await readGlobalState();
     res.json({ txId, state });
   } catch (err) {
@@ -182,6 +188,7 @@ app.post("/remove", async (req, res) => {
 
   try {
     const txId = await callApp(args);
+    console.log(`Remove-item transaction ID:`, txId);
     const state = await readGlobalState();
     res.json({ txId, state });
   } catch (err) {
@@ -194,6 +201,7 @@ app.post("/remove", async (req, res) => {
 app.post("/clear", async (_req, res) => {
   try {
     const txId = await callApp([ new Uint8Array(Buffer.from("ClearAll")) ]);
+    console.log(`Clear all-item transaction ID:`, txId);
     const state = await readGlobalState();
     res.json({ txId, state });
   } catch (err) {
