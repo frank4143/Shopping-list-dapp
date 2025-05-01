@@ -1,25 +1,215 @@
+/* src/index.css */
+:root {
+  --bg: #1F1F1F;
+  --card: #2B2B2B;
+  --text: #E0E0E0;
+  --head: #FFFFFF;
+  --accent: #4ECCA3;
+  --accent-dark: #3CA27F;
+  --stone: #888888;
+  --stone-light: #444444;
+  --border: #444444;
+  --hover-row: #353535;
+  --error: #E06C75;
+}
+
+* { box-sizing: border-box; }
 body {
-    font-family: sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #f5f5f5;
-  }
-  .container {
-    max-width: 800px;
-    margin: 2rem auto;
-    background: white;
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  }
-  button {
-    margin-right: 0.5rem;
-  }
-  input, select, textarea {
-    width: 100%;
-    padding: 0.4rem;
-    margin-bottom: 0.8rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
+  margin: 0; padding: 0;
+  font-family: 'Lato', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+.container {
+  max-width: 720px;
+  margin: 2rem auto;
+  background: var(--card);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+  padding: 2rem;
+  position: relative;
+}
+h1 {
+  font-family: 'Merriweather', serif;
+  color: var(--head);
+  margin: 0 0 .25rem;
+  font-size: 2.25rem;
+}
+.subtitle {
+  margin: 0 0 1.5rem;
+  color: var(--stone);
+  font-weight: 300;
+}
+
+/* Transaction ID */
+.txid {
+  font-size: .9rem;
+  color: var(--stone-light);
+  margin-bottom: 1rem;
+}
+
+/* Clear All button top-right */
+.clear-all {
+  position: absolute;
+  top: 2rem; right: 2rem;
+  background: none;
+  border: 1.5px solid var(--stone);
+  color: var(--stone);
+  padding: .5rem 1rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.clear-all:hover {
+  background: var(--stone-light);
+  color: var(--head);
+}
+
+/* Form card */
+.form-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: 1fr 80px 130px;
+  grid-template-rows: auto auto;
+  grid-gap: .75rem 1rem;
+  margin-bottom: 1.5rem;
+}
+.form-card label {
+  display: flex;
+  flex-direction: column;
+  color: var(--head);
+  font-size: .9rem;
+}
+.form-card input,
+.form-card select,
+.form-card textarea {
+  margin-top: .25rem;
+  padding: .5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 1rem;
+}
+.form-card textarea {
+  grid-column: 1 / span 3;
+  resize: vertical;
+  min-height: 60px;
+}
+
+/* Buttons */
+.btn {
+  font-family: inherit;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  cursor: pointer;
+  height: 38px;
+  padding: 0 1rem;
+  border-radius: 9999px;
+  transition: background .2s, box-shadow .2s;
+}
+.btn-add {
+  background: var(--accent);
+  color: var(--card);
+  border: none;
+}
+.btn-add:hover {
+  background: var(--accent-dark);
+}
+.btn-cancel {
+  background: none;
+  border: 1.5px solid var(--stone);
+  color: var(--stone);
+}
+.btn-cancel:hover {
+  background: var(--stone-light);
+  color: var(--head);
+}
+
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+}
+thead th {
+  background: var(--card);
+  color: var(--head);
+  font-weight: 600;
+  font-size: .85rem;
+  text-transform: uppercase;
+  padding: .75rem;
+  border-bottom: 1px solid var(--border);
+}
+tbody tr {
+  border-bottom: 1px solid var(--border);
+}
+tbody tr:nth-child(even) {
+  background: var(--stone-light);
+}
+tbody tr:hover {
+  background: var(--hover-row);
+}
+td {
+  padding: .75rem;
+  color: var(--text);
+}
+.category-badge {
+  background: var(--stone-light);
+  color: var(--stone);
+  font-size: .75rem;
+  padding: .25rem .6rem;
+  border-radius: 9999px;
+}
+.actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  margin-right: .5rem;
+  color: var(--stone);
+  transition: color .2s;
+}
+.actions button:hover {
+  color: var(--accent);
+}
+
+/* Action‐box under page */
+.action-box {
+  display: flex;
+  justify-content: space-between;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+.action-box .btn-list,
+.action-box .btn-delete {
+  background: none;
+  border: 1.5px solid;
+  width: 30%;
+  font-weight: 600;
+}
+.action-box .btn-list {
+  border-color: var(--stone);
+  color: var(--stone);
+}
+.action-box .btn-list:hover {
+  background: var(--stone-light);
+  color: var(--head);
+}
+.action-box .btn-delete {
+  border-color: var(--error);
+  color: var(--error);
+}
+.action-box .btn-delete:hover {
+  background: rgba(224,108,117,0.2);
+  color: var(--head);
+}

@@ -1,112 +1,91 @@
+// src/App.jsx
 import React, { useEffect, useState } from "react";
 import { getItems, addItem, updateItem, removeItem, clearAll } from "./api";
-import ItemList from "./components/ItemList";
-import AddItemForm from "./components/AddItemForm";
-import EditItemForm from "./components/EditItemForm";
+import ListPage from "./pages/ListPage";
+import AddPage from "./pages/AddPage";
 
 export default function App() {
   const [items, setItems] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [lastTxId, setLastTxId] = useState(""); // new state for txID
+  const [showAdd, setShowAdd] = useState(false);
+  const [lastTxId, setLastTxId] = useState("");
 
   const load = async () => {
-    setLoading(true);
-    try {
-      const data = await getItems();
-      setItems(data.items || []);
-    } catch (err) {
-      setError("Failed to load items");
-    } finally {
-      setLoading(false);
-    }
+    const { items = [] } = await getItems();
+    setItems(items);
   };
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
 
-  const handleAdd = async (item) => {
-    try {
-      const { txId } = await addItem(item);
-      console.log("Add transaction ID:", txId);
-      setLastTxId(txId);
-      await load();
-    } catch (err) {
-      setError("Add failed");
-    }
+  const handleAdd = async item => {
+    const { txId = "" } = await addItem(item);
+    setLastTxId(txId);
+    await load();
+    setShowAdd(false);
   };
 
-  const handleUpdate = async (index, item) => {
-    try {
-      const { txId } = await updateItem(index, item);
-      console.log("Update transaction ID:", txId);
-      setLastTxId(txId);
-      setEditingIndex(null);
-      await load();
-    } catch (err) {
-      setError("Update failed");
-    }
+  const handleUpdate = async (i, item) => {
+    const { txId = "" } = await updateItem(i, item);
+    setLastTxId(txId);
+    setEditingIndex(null);
+    await load();
   };
 
-  const handleRemove = async (index) => {
-    try {
-      const { txId } = await removeItem(index);
-      console.log("Remove transaction ID:", txId);
-      setLastTxId(txId);
-      await load();
-    } catch (err) {
-      setError("Remove failed");
-    }
+  const handleRemove = async i => {
+    const { txId = "" } = await removeItem(i);
+    setLastTxId(txId);
+    await load();
   };
 
   const handleClear = async () => {
-    try {
-      const { txId } = await clearAll();
-      console.log("Clear transaction ID:", txId);
-      setLastTxId(txId);
-      await load();
-    } catch (err) {
-      setError("Clear failed");
-    }
+    const { txId = "" } = await clearAll();
+    setLastTxId(txId);
+    await load();
   };
 
   return (
     <div className="container">
-      <h1>Shopping List</h1>
-      {error && <div style={{ color: "red" }}>{error}</div>}
+      <h1>EverCart</h1>
+      <p className="subtitle">Your mindful grocery companion</p>
+      {lastTxId && <div className="txid">Last Transaction ID: {lastTxId}</div>}
+      <button className="clear-all" onClick={handleClear}>Clear All</button>
 
-      {/* Display last transaction ID */}
-      {lastTxId && (
-        <div style={{ margin: "1rem 0", fontStyle: "italic" }}>
-          Last transaction ID: <code>{lastTxId}</code>
-        </div>
-      )}
-
-      {loading ? (
-        <p>Loading…</p>
+      {showAdd ? (
+        <AddPage onAdd={handleAdd} onCancel={() => setShowAdd(false)} />
+      ) : editingIndex != null ? (
+        <ListPage
+          items={items}
+          editingIndex={editingIndex}
+          onEdit={setEditingIndex}
+          onRemove={handleRemove}
+          onSave={handleUpdate}
+          onCancel={() => setEditingIndex(null)}
+        />
       ) : (
-        <>
-          <ItemList
-            items={items}
-            onEdit={setEditingIndex}
-            onRemove={handleRemove}
-            onClear={handleClear}
-          />
-
-          {editingIndex != null ? (
-            <EditItemForm
-              index={editingIndex}
-              item={items[editingIndex]}
-              onSave={handleUpdate}
-              onCancel={() => setEditingIndex(null)}
-            />
-          ) : (
-            <AddItemForm onAdd={handleAdd} />
-          )}
-        </>
+        <ListPage
+          items={items}
+          onEdit={setEditingIndex}
+          onRemove={handleRemove}
+        />
       )}
+
+      <div className="action-box">
+        <button
+          className="btn btn-list"
+          onClick={() => { setShowAdd(false); setEditingIndex(null); }}
+        >
+          View List
+        </button>
+        <button
+          className="btn btn-add"
+          onClick={() => { setShowAdd(true); setEditingIndex(null); }}
+        >
+          Add Item
+        </button>
+        <button className="btn btn-delete" onClick={handleClear}>
+          Clear All
+        </button>
+      </div>
     </div>
   );
 }
