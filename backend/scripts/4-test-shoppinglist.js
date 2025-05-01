@@ -132,7 +132,7 @@ async function callApp(args) {
     console.log("ClearAll txId:", txId);
     await readGlobalState(algodClient, appId);
 
-    console.log("\n✅ All tests completed successfully.");
+    console.log("\n All tests completed successfully.");
   } catch (err) {
     console.error("Test script failed:", err);
     process.exit(1);

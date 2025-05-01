@@ -68,7 +68,7 @@ async function compileProgram(client, tealSource) {
 
     // ── Print new App ID ────────────────────────────────────────────────────
     const appId = confirmedTxn["application-index"];
-    console.log("🚀 Deployed ShoppingList app with App ID:", appId);
+    console.log(" Deployed ShoppingList app with App ID:", appId);
 
     // ── Write the App ID back into .env ─────────────────────────────────────
     const envPath = path.resolve(process.cwd(), ".env");
@@ -90,7 +90,7 @@ async function compileProgram(client, tealSource) {
     }
 
     await writeFile(envPath, newLines.join("\n"), "utf8");
-    console.log(`✅ Updated .env with ${key}=${appId}`);
+    console.log(` Updated .env with ${key}=${appId}`);
   } catch (err) {
     console.error("Deployment failed:", err);
     process.exit(1);

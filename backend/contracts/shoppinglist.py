@@ -121,8 +121,8 @@ if __name__ == "__main__":
 
     with open(apath, "w") as f:
         f.write(approval_teal)
-    print("✅ Wrote approval program to", apath)
+    print(" Wrote approval program to", apath)
 
     with open(cpath, "w") as f:
         f.write(clear_teal)
-    print("✅ Wrote clear-state program to", cpath)
+    print(" Wrote clear-state program to", cpath)

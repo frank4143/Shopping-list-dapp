@@ -211,5 +211,5 @@ app.post("/clear", async (_req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 ShoppingList API listening on http://localhost:${PORT}`);
+  console.log(` ShoppingList API listening on http://localhost:${PORT}`);
 });
